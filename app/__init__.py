@@ -33,15 +33,16 @@ def webhook():
     try:
         headers = {'Content-Type':'application/json', 'Authorization':'Bearer ' + LINE_CHANNEL_SECRET}
         for events in request.json['events']:
+            source_type = events['source']['type']
+            buffer_id = source_type
+            if source_type == 'user':
+                buffer_id = buffer_id + events['source']['userId']
+            elif source_type == 'group':
+                buffer_id = buffer_id + events['source']['groupId']
+            elif source_type == 'room':
+                buffer_id = buffer_id + events['source']['roomId']
+                
             if events['message']['type'] == 'text':
-                source_type = events['source']['type']
-                buffer_id = source_type
-                if source_type == 'user':
-                    buffer_id = buffer_id + events['source']['userId']
-                elif source_type == 'group':
-                    buffer_id = buffer_id + events['source']['groupId']
-                elif source_type == 'room':
-                    buffer_id = buffer_id + events['source']['roomId']
                 db = MongoClient(MONGODB_URI)
                 doc = db.heroku_lq333lwm.issuebot.find_one({'room_id': buffer_id})
                 if doc == None:
